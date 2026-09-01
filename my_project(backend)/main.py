@@ -6,6 +6,8 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+book = ""
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins = ["http://localhost:3000"],
@@ -22,6 +24,19 @@ tasks: list[TaskSchema] = []
 class TaskCreateSchema(BaseModel):
     title: str
 
+class BookWrite(BaseModel):
+    book: str
+
+
+@app.post("/book")
+def create_book(payload:BookWrite):
+    global book
+    book = payload.book
+    return book
+
+@app.get("/book")
+def fav_book():
+    return f"Любимая книга: {book}"
 
 @app.get("/tasks")
 def read_tasks() -> list[TaskSchema]:
