@@ -1,10 +1,34 @@
 from uuid import uuid4
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from fastapi import HTTPException
+from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, Session
 
-app = FastAPI()
+
+DATABASE_URL = "postgresql+psycopg://postgres:admin@127.0.0.1:15432/postgres" # Подключение к бд
+engine = create_engine(DATABASE_URL)#Это связь бд с кодом create_engine создает связь
+Sessionlocal = sessionmaker[Session](bind=engine)#создание какого то шаблона для создания сессии
+
+
+class Base(DeclarativeBase):#Ну новый класс который создает экземпляр на основе DeclarativeBase
+    id: Mapped[str] = mapped_column(primary_key=True, default=lambda: str(uuid4()))#
+#
+
+class TaskORM(Base):#Новый класс который наследует Base
+    __tablename__ = "tasks"#
+    title: Mapped[str]
+    completed: Mapped[bool] = mapped_column(default=False)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    Base.metadata.create_all()
+    yield
+
+app = FastAPI(lifespan = lifespan)
 
 book = ""
 
