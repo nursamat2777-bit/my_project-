@@ -8,6 +8,7 @@ engine = create_engine(settings.DATABASE_URL)#Это связь бд с кодо
 Sessionlocal = sessionmaker[Session](bind=engine) # Создаём фабрику сессий, которая будет создавать сессии для работы с БД через engine
 
 def get_db():
+    """Функция для инъекции БД"""
     db = Sessionlocal()
     try:
         yield db
